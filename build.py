@@ -6,7 +6,7 @@ use_plugin("python.unittest")
 use_plugin("python.coverage")
 
 
-name = "G8X.2025.TYY.GE2"
+name = "G88.2025.T05.GE3"
 default_task = "publish"
 
 
