@@ -70,7 +70,8 @@ class AccountManager:
 
         return iban_without_control_digits
 
-    def validate_concept(self, concept: str):
+    @staticmethod
+    def validate_concept(concept: str):
         """regular expression for checking the minimum and maximum length as well as
         the allowed characters and spaces restrictions
         there are other ways to check this"""
@@ -80,7 +81,8 @@ class AccountManager:
         if not result:
             raise AccountManagementException ("Invalid concept format")
 
-    def validate_transfer_date(self, transfer_date_string):
+    @staticmethod
+    def validate_transfer_date(transfer_date_string):
         """validates the arrival date format  using regex"""
         transfer_date_regex = re.compile(r"^(([0-2]\d|3[0-1])\/(0\d|1[0-2])\/\d\d\d\d)$")
         result = transfer_date_regex.fullmatch(transfer_date_string)
@@ -98,8 +100,33 @@ class AccountManager:
         if transfer_date.year < 2025 or transfer_date.year > 2050:
             raise AccountManagementException("Invalid date format")
         return transfer_date_string
-    #pylint: disable=too-many-arguments
 
+    @staticmethod
+    def validate_amount(amount: str):
+        """This method verifies that the provided amount is valid
+        :param amount: Amount to be verified"""
+        try:
+            amount_as_float = float(amount)
+        except ValueError as exc:
+            raise AccountManagementException("Invalid transfer amount") from exc
+        amount_as_string = str(amount_as_float)
+        if '.' in amount_as_string:
+            decimales = len(amount_as_string.split('.')[1])
+            if decimales > 2:
+                raise AccountManagementException("Invalid transfer amount")
+        if amount_as_float < 10 or amount_as_float > 10000:
+            raise AccountManagementException("Invalid transfer amount")
+
+    @staticmethod
+    def validate_type(transfer_type: str):
+        """This method verifies if the type of a transfer is valid
+        :param transfer_type; type to be verified"""
+        transfer_type_regex = re.compile(r"(ORDINARY|INMEDIATE|URGENT)")
+        result = transfer_type_regex.fullmatch(transfer_type)
+        if not result:
+            raise AccountManagementException("Invalid transfer type")
+
+    #pylint: disable=too-many-arguments
     def transfer_request(self, from_iban: str,
                          to_iban: str,
                          concept: str,
@@ -111,24 +138,9 @@ class AccountManager:
         self.validate_iban(from_iban)
         self.validate_iban(to_iban)
         self.validate_concept(concept)
-        transfer_type_regex = re.compile(r"(ORDINARY|INMEDIATE|URGENT)")
-        result = transfer_type_regex.fullmatch(transfer_type)
-        if not result:
-            raise AccountManagementException("Invalid transfer type")
+        self.validate_type(transfer_type)
         self.validate_transfer_date(date)
-        try:
-            amount_as_float  = float(amount)
-        except ValueError as exc:
-            raise AccountManagementException("Invalid transfer amount") from exc
-
-        amount_as_string = str(amount_as_float)
-        if '.' in amount_as_string:
-            decimales = len(amount_as_string.split('.')[1])
-            if decimales > 2:
-                raise AccountManagementException("Invalid transfer amount")
-
-        if amount_as_float < 10 or amount_as_float > 10000:
-            raise AccountManagementException("Invalid transfer amount")
+        self.validate_amount(amount)
 
         new_transfer_request = TransferRequest(from_iban=from_iban,
                                      to_iban=to_iban,
@@ -137,34 +149,34 @@ class AccountManager:
                                      transfer_date=date,
                                      transfer_amount=amount)
 
+        transfer_history = self.load_json_file(TRANSFERS_STORE_FILE)
+
+        for transfer in transfer_history:
+            if ((transfer["from_iban"] == new_transfer_request.from_iban and
+                    transfer["to_iban"] == new_transfer_request.to_iban and
+                    transfer["transfer_date"] == new_transfer_request.transfer_date)):
+                    if (transfer["transfer_amount"] == new_transfer_request.transfer_amount and
+                    transfer["transfer_concept"] == new_transfer_request.transfer_concept and
+                    transfer["transfer_type"] == new_transfer_request.transfer_type):
+                        raise AccountManagementException("Duplicated transfer in transfer list")
+
+        transfer_history.append(new_transfer_request.to_json())
+        self.dump_data_into_json(TRANSFERS_STORE_FILE, transfer_history)
+        return new_transfer_request.transfer_code
+
+    @staticmethod
+    def load_json_file(json_file:str)->list:
+        """This method loads the json file and returns a list with its contents, if the file is empty,
+        an empy list is returned
+        :param json_file: the file that whose contents will be loaded"""
         try:
-            with open(TRANSFERS_STORE_FILE, "r", encoding="utf-8", newline="") as file:
+            with open(json_file, "r", encoding="utf-8", newline="") as file:
                 transfer_history = json.load(file)
         except FileNotFoundError:
             transfer_history = []
         except json.JSONDecodeError as ex:
             raise AccountManagementException("JSON Decode Error - Wrong JSON Format") from ex
-
-        for transfer in transfer_history:
-            if (transfer["from_iban"] == new_transfer_request.from_iban and
-                    transfer["to_iban"] == new_transfer_request.to_iban and
-                    transfer["transfer_date"] == new_transfer_request.transfer_date and
-                    transfer["transfer_amount"] == new_transfer_request.transfer_amount and
-                    transfer["transfer_concept"] == new_transfer_request.transfer_concept and
-                    transfer["transfer_type"] == new_transfer_request.transfer_type):
-                raise AccountManagementException("Duplicated transfer in transfer list")
-
-        transfer_history.append(new_transfer_request.to_json())
-
-        try:
-            with open(TRANSFERS_STORE_FILE, "w", encoding="utf-8", newline="") as file:
-                json.dump(transfer_history, file, indent=2)
-        except FileNotFoundError as ex:
-            raise AccountManagementException("Wrong file  or file path") from ex
-        except json.JSONDecodeError as ex:
-            raise AccountManagementException("JSON Decode Error - Wrong JSON Format") from ex
-
-        return new_transfer_request.transfer_code
+        return transfer_history
 
     def deposit_into_account(self, input_file:str)->str:
         """manages the deposits received for accounts"""
@@ -197,28 +209,15 @@ class AccountManager:
         deposit_obj = AccountDeposit(to_iban=deposit_iban,
                                      deposit_amount=deposit_amount_as_float)
 
-        try:
-            with open(DEPOSITS_STORE_FILE, "r", encoding="utf-8", newline="") as file:
-                deposits_history = json.load(file)
-        except FileNotFoundError as ex:
-            deposits_history = []
-        except json.JSONDecodeError as ex:
-            raise AccountManagementException("JSON Decode Error - Wrong JSON Format") from ex
-
+        deposits_history = self.load_json_file(DEPOSITS_STORE_FILE)
         deposits_history.append(deposit_obj.to_json())
 
-        try:
-            with open(DEPOSITS_STORE_FILE, "w", encoding="utf-8", newline="") as file:
-                json.dump(deposits_history, file, indent=2)
-        except FileNotFoundError as ex:
-            raise AccountManagementException("Wrong file  or file path") from ex
-        except json.JSONDecodeError as ex:
-            raise AccountManagementException("JSON Decode Error - Wrong JSON Format") from ex
+        self.dump_data_into_json(DEPOSITS_STORE_FILE, deposits_history)
 
         return deposit_obj.deposit_signature
 
-
-    def read_transactions_file(self):
+    @staticmethod
+    def read_transactions_file():
         """loads the content of the transactions file
         and returns a list"""
         try:
@@ -259,9 +258,18 @@ class AccountManager:
 
         balance_list.append(last_balance)
 
+        self.dump_data_into_json(BALANCES_STORE_FILE, balance_list)
+        return True
+
+    @staticmethod
+    def dump_data_into_json(json_file:str, dump_data:list):
+        """This method dumps the provided data into the specified json file
+        :param json_file: the json file in which the data will be dumped
+        :param dump_data: the data to be dumped"""
         try:
-            with open(BALANCES_STORE_FILE, "w", encoding="utf-8", newline="") as file:
-                json.dump(balance_list, file, indent=2)
+            with open(json_file, "w", encoding="utf-8", newline="") as file:
+                json.dump(dump_data, file, indent=2)
         except FileNotFoundError as ex:
             raise AccountManagementException("Wrong file  or file path") from ex
-        return True
+        except json.JSONDecodeError as ex:
+            raise AccountManagementException("JSON Decode Error - Wrong JSON Format") from ex
