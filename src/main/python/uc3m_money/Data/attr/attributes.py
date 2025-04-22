@@ -8,7 +8,7 @@ class Attribute():
         self._error_message = ""
         self._validation_pattern = r""
 
-    def _validation(self, value):
+    def _validate(self, value):
         myregex = re.compile(self._validation_pattern)
         result = myregex.fullmatch(value)
         if not result:

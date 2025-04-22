@@ -9,7 +9,7 @@ class Iban(Attribute):
         self._attr_value = self._validate(attr_value)
 
     def _validate(self, attr_value:str )->str:
-        attr_value = super()
+        attr_value = super()._validate(attr_value)
 
         iban = attr_value
         original_code = iban[2:4]

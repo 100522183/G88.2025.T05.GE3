@@ -3,6 +3,7 @@ import hashlib
 import json
 from datetime import datetime, timezone
 from uc3m_money.Data.attr.attribute_iban import Iban
+from uc3m_money.Data.attr.attribute_concept import Concept
 
 class TransferRequest:
     """Class representing a transfer request"""
@@ -17,7 +18,7 @@ class TransferRequest:
         self.__from_iban = Iban(from_iban).value
         self.__to_iban = Iban(to_iban).value
         self.__transfer_type = transfer_type
-        self.__concept = transfer_concept
+        self.__concept = Concept(transfer_concept).value
         self.__transfer_date = transfer_date
         self.__transfer_amount = transfer_amount
         justnow = datetime.now(timezone.utc)
