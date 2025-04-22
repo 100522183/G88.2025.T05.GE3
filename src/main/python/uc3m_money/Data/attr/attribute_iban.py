@@ -1,6 +1,5 @@
-from astroid.objects import Super
-
-from src.main.python.uc3m_money.attributes.attributes import Attribute
+from uc3m_money.Data.attr.attributes import Attribute
+from uc3m_money.account_management_exception import AccountManagementException
 
 
 class Iban(Attribute):
@@ -10,7 +9,7 @@ class Iban(Attribute):
         self._attr_value = self._validate(attr_value)
 
     def _validate(self, attr_value:str )->str:
-        attr_value = super()._validate(attr_value)
+        attr_value = super()
 
         iban = attr_value
         original_code = iban[2:4]
