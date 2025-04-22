@@ -135,8 +135,6 @@ class AccountManager:
                          amount: float)->str:
         """first method: receives transfer info and
         stores it into a file"""
-        self.validate_type(transfer_type)
-        self.validate_transfer_date(date)
         self.validate_amount(amount)
 
         new_transfer_request = TransferRequest(from_iban=from_iban,
