@@ -101,31 +101,6 @@ class AccountManager:
             raise AccountManagementException("Invalid date format")
         return transfer_date_string
 
-    @staticmethod
-    def validate_amount(amount: str):
-        """This method verifies that the provided amount is valid
-        :param amount: Amount to be verified"""
-        try:
-            amount_as_float = float(amount)
-        except ValueError as exc:
-            raise AccountManagementException("Invalid transfer amount") from exc
-        amount_as_string = str(amount_as_float)
-        if '.' in amount_as_string:
-            decimales = len(amount_as_string.split('.')[1])
-            if decimales > 2:
-                raise AccountManagementException("Invalid transfer amount")
-        if amount_as_float < 10 or amount_as_float > 10000:
-            raise AccountManagementException("Invalid transfer amount")
-
-    @staticmethod
-    def validate_type(transfer_type: str):
-        """This method verifies if the type of a transfer is valid
-        :param transfer_type; type to be verified"""
-        transfer_type_regex = re.compile(r"(ORDINARY|INMEDIATE|URGENT)")
-        result = transfer_type_regex.fullmatch(transfer_type)
-        if not result:
-            raise AccountManagementException("Invalid transfer type")
-
     #pylint: disable=too-many-arguments
     def transfer_request(self, from_iban: str,
                          to_iban: str,
@@ -135,7 +110,6 @@ class AccountManager:
                          amount: float)->str:
         """first method: receives transfer info and
         stores it into a file"""
-        self.validate_amount(amount)
 
         new_transfer_request = TransferRequest(from_iban=from_iban,
                                      to_iban=to_iban,
@@ -192,17 +166,9 @@ class AccountManager:
 
 
         deposit_iban = self.validate_iban(deposit_iban)
-        amount_regex = re.compile(r"^EUR [0-9]{4}\.[0-9]{2}")
-        result = amount_regex.fullmatch(deposit_amount)
-        if not result:
-            raise AccountManagementException("Error - Invalid deposit amount")
-
-        deposit_amount_as_float = float(deposit_amount[4:])
-        if deposit_amount_as_float == 0:
-            raise AccountManagementException("Error - Deposit must be greater than 0")
 
         deposit_obj = AccountDeposit(to_iban=deposit_iban,
-                                     deposit_amount=deposit_amount_as_float)
+                                     deposit_amount=deposit_amount)
 
         deposits_history = self.load_json_file(DEPOSITS_STORE_FILE)
         deposits_history.append(deposit_obj.to_json())
@@ -210,6 +176,7 @@ class AccountManager:
         self.dump_data_into_json(DEPOSITS_STORE_FILE, deposits_history)
 
         return deposit_obj.deposit_signature
+
 
     @staticmethod
     def read_transactions_file():

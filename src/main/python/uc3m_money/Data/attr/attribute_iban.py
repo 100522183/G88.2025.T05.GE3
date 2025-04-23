@@ -18,19 +18,17 @@ class Iban(Attribute):
         iban = iban[4:] + iban[:4]
 
         # Convertir el IBAN en una cadena numérica, reemplazando letras por números
-        iban = (iban.replace('A', '10').replace('B', '11').
-                replace('C', '12').replace('D', '13').replace('E', '14').
-                replace('F', '15'))
-        iban = (iban.replace('G', '16').replace('H', '17').
-                replace('I', '18').replace('J', '19').replace('K', '20').
-                replace('L', '21'))
-        iban = (iban.replace('M', '22').replace('N', '23').
-                replace('O', '24').replace('P', '25').replace('Q', '26').
-                replace('R', '27'))
-        iban = (iban.replace('S', '28').replace('T', '29').replace('U', '30').
-                replace('V', '31').replace('W', '32').replace('X', '33'))
-        iban = iban.replace('Y', '34').replace('Z', '35')
 
+        iban_replacements = {
+            'A': '10', 'B': '11', 'C': '12', 'D': '13', 'E': '14',
+            'F': '15', 'G': '16', 'H': '17', 'I': '18', 'J': '19',
+            'K': '20', 'L': '21', 'M': '22', 'N': '23', 'O': '24',
+            'P': '25', 'Q': '26', 'R': '27', 'S': '28', 'T': '29',
+            'U': '30', 'V': '31', 'W': '32', 'X': '33', 'Y': '34',
+            'Z': '35'
+        }
+        for letter in iban_replacements.keys():
+            iban = iban.replace(letter, iban_replacements[letter])
         # Mover los cuatro primeros caracteres al final
 
         # Convertir la cadena en un número entero

@@ -2,7 +2,7 @@ from uc3m_money.Data.attr.attributes import Attribute
 from uc3m_money.account_management_exception import AccountManagementException
 from datetime import datetime, timezone
 
-class Transfer_date(Attribute):
+class TransferDate(Attribute):
     def __init__(self, attr_value):
         self._error_message = "Invalid date format"
         self._validation_pattern = r"^(([0-2]\d|3[0-1])\/(0\d|1[0-2])\/\d\d\d\d)$"

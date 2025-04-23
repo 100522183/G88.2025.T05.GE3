@@ -5,8 +5,8 @@ from datetime import datetime, timezone
 from uc3m_money.Data.attr.attribute_iban import Iban
 from uc3m_money.Data.attr.attribute_concept import Concept
 from uc3m_money.Data.attr.attribute_type import Type
-from uc3m_money.Data.attr.attribute_transfer_date import Transfer_date
-
+from uc3m_money.Data.attr.attribute_transfer_date import TransferDate
+from uc3m_money.Data.attr.attribute_transfer_amount import TransferAmount
 class TransferRequest:
     """Class representing a transfer request"""
     #pylint: disable=too-many-arguments
@@ -21,8 +21,8 @@ class TransferRequest:
         self.__to_iban = Iban(to_iban).value
         self.__transfer_type = Type(transfer_type).value
         self.__concept = Concept(transfer_concept).value
-        self.__transfer_date = Transfer_date(transfer_date).value
-        self.__transfer_amount = transfer_amount
+        self.__transfer_date = TransferDate(transfer_date).value
+        self.__transfer_amount = TransferAmount(transfer_amount).value
         justnow = datetime.now(timezone.utc)
         self.__time_stamp = datetime.timestamp(justnow)
 
