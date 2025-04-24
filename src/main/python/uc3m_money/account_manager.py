@@ -1,6 +1,4 @@
 """Account manager module """
-import json
-from uc3m_money.account_management_exception import AccountManagementException
 from uc3m_money.transfer_request import TransferRequest
 from uc3m_money.account_deposit import AccountDeposit
 from uc3m_money.iban_balance import IbanBalance
@@ -38,24 +36,7 @@ class AccountManager:
 
     def deposit_into_account(self, input_file:str)->str:
         """manages the deposits received for accounts"""
-        try:
-            with open(input_file, "r", encoding="utf-8", newline="") as file:
-                deposit_data = json.load(file)
-        except FileNotFoundError as ex:
-            raise AccountManagementException("Error: file input not found") from ex
-        except json.JSONDecodeError as ex:
-            raise AccountManagementException("JSON Decode Error - Wrong JSON Format") from ex
-
-        #check values of the file
-        try:
-            deposit_iban = deposit_data["IBAN"]
-            deposit_amount = deposit_data["AMOUNT"]
-        except KeyError as e:
-            raise AccountManagementException("Error - Invalid Key in JSON") from e
-
-        deposit_obj = AccountDeposit(to_iban=deposit_iban,
-                                     deposit_amount=deposit_amount)
-
+        deposit_obj = AccountDeposit.load_deposit_from_file(input_file)
         deposit_store = DepositsJsonStore()
         deposit_store.add_item(deposit_obj)
         return deposit_obj.deposit_signature
