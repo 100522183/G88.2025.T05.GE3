@@ -4,7 +4,7 @@ from uc3m_money.account_management_config import TRANSFERS_STORE_FILE
 from uc3m_money.account_management_exception import AccountManagementException
 
 
-class TransfersJsonStore(JsonStore):
+class TransfersJsonStore(JsonStore._JsonStore):
     """Manages the transfers json store"""
     _file_name = TRANSFERS_STORE_FILE
 
