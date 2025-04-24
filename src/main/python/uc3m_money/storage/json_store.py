@@ -1,8 +1,10 @@
+"""Import json and the exceptions"""
 import json
 from uc3m_money.account_management_exception import AccountManagementException
 
 
 class JsonStore:
+    """Superclass for the JsonStore"""
     _data_list = []
     _file_name = ""
     def __init__(self):

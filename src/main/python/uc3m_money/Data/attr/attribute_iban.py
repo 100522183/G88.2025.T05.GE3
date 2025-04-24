@@ -1,8 +1,10 @@
+"""Import all the needed from Attribute class and the exceptions"""
 from uc3m_money.Data.attr.attributes import Attribute
 from uc3m_money.account_management_exception import AccountManagementException
 
 
 class Iban(Attribute):
+    """Manages the Iban attribute"""
     def __init__(self, attr_value):
         self._error_message = "Invalid IBAN format"
         self._validation_pattern = r"^ES[0-9]{22}"

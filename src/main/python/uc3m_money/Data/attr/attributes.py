@@ -1,8 +1,10 @@
+"""Import re and the exceptions"""
 import re
 from uc3m_money.account_management_exception import AccountManagementException
 
 
 class Attribute():
+    """Superclass for all attributes"""
     def __init__(self):
         self._attr_value = ""
         self._error_message = ""

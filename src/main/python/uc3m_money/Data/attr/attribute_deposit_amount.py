@@ -1,8 +1,10 @@
+"""Import all the needed from Attribute class and the exceptions"""
 from uc3m_money.Data.attr.attributes import Attribute
 from uc3m_money.account_management_exception import AccountManagementException
 
 
 class DepositAmount(Attribute):
+    """Manages the DepositAmount attribute"""
     def __init__(self, attr_value):
         self._error_message = "Error - Invalid deposit amount"
         self._validation_pattern = r"^EUR [0-9]{4}\.[0-9]{2}"
