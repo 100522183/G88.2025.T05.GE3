@@ -10,7 +10,6 @@ class Iban(Attribute):
 
     def _validate(self, attr_value:str )->str:
         attr_value = super()._validate(attr_value)
-
         iban = attr_value
         original_code = iban[2:4]
         # replacing the control
