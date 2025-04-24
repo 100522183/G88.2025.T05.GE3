@@ -164,9 +164,6 @@ class AccountManager:
         except KeyError as e:
             raise AccountManagementException("Error - Invalid Key in JSON") from e
 
-
-        deposit_iban = self.validate_iban(deposit_iban)
-
         deposit_obj = AccountDeposit(to_iban=deposit_iban,
                                      deposit_amount=deposit_amount)
 
@@ -195,16 +192,7 @@ class AccountManager:
     def calculate_balance(self, iban:str)->bool:
         """calculate the balance for a given iban"""
         iban = self.validate_iban(iban)
-        transaction_history = self.read_transactions_file()
-        iban_found = False
-        balance = 0
-        for transaction in transaction_history:
-            #print(transaction["IBAN"] + " - " + iban)
-            if transaction["IBAN"] == iban:
-                balance += float(transaction["amount"])
-                iban_found = True
-        if not iban_found:
-            raise AccountManagementException("IBAN not found")
+        balance = self.sum_account_transactions(iban)
 
         last_balance = {"IBAN": iban,
                         "time": datetime.timestamp(datetime.now(timezone.utc)),
@@ -222,6 +210,19 @@ class AccountManager:
 
         self.dump_data_into_json(BALANCES_STORE_FILE, balance_list)
         return True
+
+    def sum_account_transactions(self, iban):
+        transaction_history = self.read_transactions_file()
+        iban_found = False
+        balance = 0
+        for transaction in transaction_history:
+            # print(transaction["IBAN"] + " - " + iban)
+            if transaction["IBAN"] == iban:
+                balance += float(transaction["amount"])
+                iban_found = True
+        if not iban_found:
+            raise AccountManagementException("IBAN not found")
+        return balance
 
     @staticmethod
     def dump_data_into_json(json_file:str, dump_data:list):
