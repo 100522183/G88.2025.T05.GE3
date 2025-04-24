@@ -1,17 +1,13 @@
 """Account manager module """
-import re
 import json
-from datetime import datetime, timezone
 from uc3m_money.account_management_exception import AccountManagementException
-from uc3m_money.account_management_config import (TRANSFERS_STORE_FILE,
-                                        DEPOSITS_STORE_FILE,
-                                        TRANSACTIONS_STORE_FILE,
-                                        BALANCES_STORE_FILE)
+from uc3m_money.account_management_config import BALANCES_STORE_FILE
 
 from uc3m_money.transfer_request import TransferRequest
 from uc3m_money.account_deposit import AccountDeposit
-
 from uc3m_money.iban_balance import IbanBalance
+from uc3m_money.storage.transfers_json_store import TransfersJsonStore
+from uc3m_money.storage.deposits_json_store import DepositsJsonStore
 
 
 class AccountManager:
@@ -36,19 +32,8 @@ class AccountManager:
                                      transfer_date=date,
                                      transfer_amount=amount)
 
-        transfer_history = self.load_json_file(TRANSFERS_STORE_FILE)
-
-        for transfer in transfer_history:
-            if ((transfer["from_iban"] == new_transfer_request.from_iban and
-                    transfer["to_iban"] == new_transfer_request.to_iban and
-                    transfer["transfer_date"] == new_transfer_request.transfer_date)):
-                    if (transfer["transfer_amount"] == new_transfer_request.transfer_amount and
-                    transfer["transfer_concept"] == new_transfer_request.transfer_concept and
-                    transfer["transfer_type"] == new_transfer_request.transfer_type):
-                        raise AccountManagementException("Duplicated transfer in transfer list")
-
-        transfer_history.append(new_transfer_request.to_json())
-        self.dump_data_into_json(TRANSFERS_STORE_FILE, transfer_history)
+        transfer_store = TransfersJsonStore()
+        transfer_store.add_item(new_transfer_request)
         return new_transfer_request.transfer_code
 
     @staticmethod
@@ -85,11 +70,8 @@ class AccountManager:
         deposit_obj = AccountDeposit(to_iban=deposit_iban,
                                      deposit_amount=deposit_amount)
 
-        deposits_history = self.load_json_file(DEPOSITS_STORE_FILE)
-        deposits_history.append(deposit_obj.to_json())
-
-        self.dump_data_into_json(DEPOSITS_STORE_FILE, deposits_history)
-
+        deposit_store = DepositsJsonStore()
+        deposit_store.add_item(deposit_obj)
         return deposit_obj.deposit_signature
 
 

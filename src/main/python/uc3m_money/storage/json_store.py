@@ -25,17 +25,6 @@ class JsonStore:
         except FileNotFoundError:
             self._data_list= []
         except json.JSONDecodeError as ex:
-            """This method loads the json file and returns a list with its contents, if the file is empty,
-                    an empy list is returned
-                    :param json_file: the file that whose contents will be loaded"""
-            try:
-                with open(json_file, "r", encoding="utf-8", newline="") as file:
-                    transfer_history = json.load(file)
-            except FileNotFoundError:
-                transfer_history = []
-            except json.JSONDecodeError as ex:
-                raise AccountManagementException("JSON Decode Error - Wrong JSON Format") from ex
-            return transfer_history
             raise AccountManagementException("JSON Decode Error - Wrong JSON Format") from ex
 
     def add_item(self, item):

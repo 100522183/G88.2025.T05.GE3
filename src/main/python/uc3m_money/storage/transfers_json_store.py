@@ -8,6 +8,7 @@ class TransfersJsonStore(JsonStore):
     def add_item(self, item):
         """Adds an item to the list and checks if the item is already in the file
         :param item: The object whose json representation will be added to the list"""
-        for transfer in transfer_history:
-            if transfer == item:
+        for transfer in self._data_list:
+            if transfer == item.to_json():
                 raise AccountManagementException("Duplicated transfer in transfer list")
+        super().add_item(item)
