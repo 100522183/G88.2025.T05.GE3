@@ -60,4 +60,4 @@ class AccountManager:
         return getattr(self.instance, nombre)
 
     def __setattr__(self, nombre, valor):
-        return setattr(self.instance, nombre, valor)
+        setattr(self.instance, nombre, valor)

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="test_deposit_tests.TestDepositIntoAccountTests-20250425095048" tests="1" file="test_deposit_tests.py" time="0.432" timestamp="2025-04-25T09:50:48" failures="0" errors="0" skipped="0">
+	<testcase classname="test_deposit_tests.TestDepositIntoAccountTests" name="test_parametrized_cases" time="0.432" timestamp="2025-04-25T09:50:48"/>
+</testsuite>
